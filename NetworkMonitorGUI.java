@@ -2,10 +2,16 @@ import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
 public class NetworkMonitorGUI extends Application {
     private static TextArea logArea = new TextArea();
@@ -29,12 +35,10 @@ public class NetworkMonitorGUI extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        // Update logArea with real-time traffic data
         Thread logUpdater = new Thread(() -> {
             while (true) {
                 try {
-                    Thread.sleep(1000); // Update every second
-                    // Fetch latest logs from database and append to logArea
+                    Thread.sleep(1000); 
                     String latestLogs = fetchLatestLogs();
                     logArea.appendText(latestLogs);
                 } catch (InterruptedException e) {
@@ -42,17 +46,34 @@ public class NetworkMonitorGUI extends Application {
                 }
             }
         });
-        logUpdater.setDaemon(true); // So it exits when main app exits
+        logUpdater.setDaemon(true); 
         logUpdater.start();
     }
 
     private static String fetchLatestLogs() {
-        // Implement logic to fetch latest logs from the database
-        return "Latest Log Entry";
+        StringBuilder logs = new StringBuilder();
+        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/network_logs", "your_username", "your_password")) {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM network_traffic ORDER BY id DESC LIMIT 10");
+            while (rs.next()) {
+                logs.append(rs.getString("source_ip")).append(" -> ").append(rs.getString("destination_ip")).append("\n");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return logs.toString();
     }
 
     public static void updateAlerts(String message) {
         alertArea.appendText(message + "\n");
+
+        if (message.contains("DDoS") || message.contains("Unauthorized")) {
+            Alert alert = new Alert(Alert.AlertType.ERROR); 
+            alert.setTitle("Critical Alert");
+            alert.setHeaderText("Network Event Detected");
+            alert.setContentText(message);
+            alert.showAndWait(); 
+        }
     }
 
     public static void main(String[] args) {
