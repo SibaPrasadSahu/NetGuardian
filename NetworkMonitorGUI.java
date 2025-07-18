@@ -52,7 +52,7 @@ public class NetworkMonitorGUI extends Application {
 
     private static String fetchLatestLogs() {
         StringBuilder logs = new StringBuilder();
-        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/network_logs", "your_username", "your_password")) {
+        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/network_logs", "siba", "siba01")) {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM network_traffic ORDER BY id DESC LIMIT 10");
             while (rs.next()) {
