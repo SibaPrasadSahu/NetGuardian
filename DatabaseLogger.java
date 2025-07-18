@@ -10,8 +10,8 @@ import java.sql.PreparedStatement;
 
 public class DatabaseLogger {
     private static final String DB_URL = "jdbc:mysql://localhost:3306/network_logs";
-    private static final String USER = "your_username";
-    private static final String PASS = "your_password";
+    private static final String USER = "siba";
+    private static final String PASS = "siba01";
 
     public static void logPacket(PcapPacket packet) {
         try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS)) {
